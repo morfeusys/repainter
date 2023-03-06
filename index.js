@@ -151,7 +151,7 @@ async function getMeta(prompt) {
 }
 
 async function modifyMeta(meta, style) {
-    const result = await getChatJson(`change each field of image JSON meta according to "${style}". Add additional string fields to JSON if needed. Return only a  JSON without any explanations.\n${JSON.stringify(meta, null, 2)}`)
+    const result = await getChatJson(`change image JSON meta to remake it to "${style}". Change type of image accordingly to new meta if needed. Add additional string fields to JSON if needed. Return only a  JSON without any explanations.\n${JSON.stringify(meta, null, 2)}`)
     result['type'] = result['photo'] ? 'photography' : result['type']
     result['sketch'] = meta['sketch']
     result['interior'] = meta['interior']
