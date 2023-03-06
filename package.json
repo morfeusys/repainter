@@ -1,0 +1,13 @@
+{
+  "name": "repainter",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.0",
+    "base64-stream": "^1.0.0",
+    "concat-stream": "^2.0.0",
+    "node-telegram-bot-api": "^0.51.0"
+  }
+}
