@@ -20,7 +20,7 @@ const awaitingMessages = ['Repainting your image...', 'Processing your image...'
 bot.on('photo', msg => {
     const chatId = msg.chat.id
     photos[chatId] = msg
-    bot.sendMessage(chatId, 'How do you want to repaint this image?\n\n_Note that you can type or send a voice on any language instead._', {
+    bot.sendMessage(chatId, 'How do you want to repaint this image?\n\n_Note that you can type or send a voice on any language._', {
         parse_mode: 'Markdown',
         reply_to_message_id: msg.message_id,
         reply_markup: {
