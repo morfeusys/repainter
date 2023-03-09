@@ -32,6 +32,7 @@ bot.on('photo', msg => {
 })
 
 bot.on('callback_query', query => {
+    bot.answerCallbackQuery(query.id)
     if (query.data === 'random') {
         const style = styles[Math.floor(Math.random() * styles.length)]
         repaint(query.message, style)
@@ -136,22 +137,23 @@ async function txt2img(stream, meta, width, height) {
 }
 
 async function getMeta(prompt) {
-    return await getChatJson('Extract features of image from description. Write a json with fields:\n' +
-        'object - main objects of image (string)\n' +
+    const meta = await getChatJson('Extract features of image from description. Write only a json with fields without any explanations:\n' +
+        'object - the main object of image (string)\n' +
         'env - image environment description (string)\n' +
         'type - a type of image (string "photo", "painting", "art", etc)\n' +
         'style - a style of image\n' +
-        'interior - true if the main object is an interior without people (boolean)\n' +
         'humans - true if image contains humans (boolean)\n' +
         'face - true if the main object is a human and face is in focus (boolean)\n' +
         'photo - true if the image is a photo (boolean)\n' +
         'sketch - true if the image is a scribble, sketch or ink painting (boolean)\n\n' +
-        'Return only a  JSON without any explanations.\n\n' +
         `Description: ${prompt}`)
+    const interior = await getChatReply(`write only "true" string if "${meta['object']}" contains only an interior furniture and nothing else`)
+    meta['interior'] = interior.toLowerCase().indexOf('true') !== -1
+    return meta
 }
 
 async function modifyMeta(meta, style) {
-    const result = await getChatJson(`change image JSON meta to remake it to "${style}". Change type of image accordingly to new meta if needed. Add additional string fields to JSON if needed. Return only a  JSON without any explanations.\n${JSON.stringify(meta, null, 2)}`)
+    const result = await getChatJson(`change image JSON meta applying "${style}" where it is possible. Change type of image accordingly if needed. Do not change fields names and types. Return only a JSON without any explanations.\n${JSON.stringify(meta, null, 2)}`)
     result['type'] = result['photo'] ? 'photography' : result['type']
     result['sketch'] = meta['sketch']
     result['interior'] = meta['interior']
@@ -161,6 +163,17 @@ async function modifyMeta(meta, style) {
 }
 
 async function getChatJson(message) {
+    const res = await getChatReply(message)
+    const json = res.substring(res.indexOf('{'), res.lastIndexOf('}') + 1)
+    try {
+        return JSON.parse(json)
+    } catch (e) {
+        console.error('Cannot parse JSON\n' + res)
+        throw new Error('cannot parse chatGPT response')
+    }
+}
+
+async function getChatReply(message) {
     const resp = await axios.post(`${process.env.API_URL}/chatgpt/chat`, {
         prompt: message,
         options: {
@@ -170,14 +183,7 @@ async function getChatJson(message) {
     if (!resp.data['text'] || !resp.data['text'].length) {
         throw new Error('cannot receive response from chatGPT')
     }
-    const res = resp.data['text']
-    const json = res.substring(res.indexOf('{'), res.lastIndexOf('}') + 1)
-    try {
-        return JSON.parse(json)
-    } catch (e) {
-        console.error('Cannot parse JSON\n' + res)
-        throw new Error('try a bit later')
-    }
+    return resp.data['text']
 }
 
 async function interrogate(stream) {
