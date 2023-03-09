@@ -158,7 +158,7 @@ async function modifyMeta(meta, style) {
     result['sketch'] = meta['sketch']
     result['interior'] = meta['interior']
     result['face'] = meta['face']
-    result['prompt'] = Object.values(result).filter(v => typeof v === 'string').join(', ') + `, (${style}):1.2`
+    result['prompt'] = Object.values(result).filter(v => typeof v === 'string').join(', ') + `, (${style}:1.2)`
     return result
 }
 
